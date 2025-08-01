@@ -37,6 +37,70 @@
   const stopButton = document.querySelector('#stop');
 
   //Your code goes here
+	function populateVoices() {
+    voices = speechSynthesis.getVoices();
+    
+    voicesDropdown.innerHTML = '<option value="">Select A Voice</option>';
+    
+    voices
+      .filter(voice => voice.lang.includes('en'))
+      .forEach((voice, i) => {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voicesDropdown.appendChild(option);
+      });
+  }
+
+  function setVoice() {
+    msg.voice = voices.find(voice => voice.name === this.selectedOptions[0].textContent.split(' (')[0]);
+    toggle();
+  }
+
+  function setOption() {
+    msg[this.name] = this.value;
+    toggle();
+  }
+
+  function toggle(startOver = true) {
+    speechSynthesis.cancel();
+    if (startOver) {
+      speechSynthesis.speak(msg);
+    }
+  }
+
+  function speak() {
+    const text = document.querySelector('[name="text"]').value;
+
+    if (!text.trim()) {
+      alert('Please enter some text to speak!');
+      return;
+    }
+
+    msg.text = text;
+
+    msg.rate = document.querySelector('[name="rate"]').value;
+    msg.pitch = document.querySelector('[name="pitch"]').value;
+    
+    const selectedVoiceIndex = voicesDropdown.value;
+    if (selectedVoiceIndex !== '' && voices[selectedVoiceIndex]) {
+      msg.voice = voices[selectedVoiceIndex];
+    }
+    
+    speechSynthesis.speak(msg);
+  }
+
+  function stop() {
+    speechSynthesis.cancel();
+  }
+
+  speechSynthesis.addEventListener('voiceschanged', populateVoices);
+  voicesDropdown.addEventListener('change', setVoice);
+  options.forEach(option => option.addEventListener('change', setOption));
+  speakButton.addEventListener('click', speak);
+  stopButton.addEventListener('click', stop);
+
+  populateVoices();
 </script>
 
 </body>
